@@ -83,4 +83,64 @@ $$;
 ```
 ✅ Applied on 6.99M reviews to classify Positive / Neutral / Negative sentiment.
 
+---
+## 📊 Dashboards & Insights  
+
+### 1️⃣ Executive Summary  
+- **6.99M reviews**, **150K businesses**, **1,311 categories** across **1,237 cities & 26 states**  
+- **94.5% Positive Sentiment**, **Avg Rating: 3.75⭐**  
+- Key Finding → **High review volume ≠ High rating** (Restaurants dominate reviews, but niche categories like *Historical Tours* rank higher)  
+
+---
+
+### 2️⃣ Overview Dashboard  
+- Top **categories & cities by review volume**  
+- **High-volume categories** with best ratings (*e.g., Historical Tours, Food Stands*)  
+- **Word Cloud (100K+ mentions)** → What customers talk about most  
+
+---
+
+### 3️⃣ State Insights  
+- State-wise **review & sentiment distribution**  
+- **Highest reviewed state:** Pennsylvania (*1.6M reviews*)  
+- **Highest rated state:** Montana (*5.0⭐*)  
+- **Lowest rated state:** Massachusetts (*1.3⭐*)  
+
+---
+
+### 4️⃣ City Insights  
+- Which **categories drive reviews** in each city  
+- **Top cities** by sentiment distribution  
+- **Heatmap (City × Category):** Compare ratings across **10 cities × 10 categories**  
+
+---
+
+### 5️⃣ Time & Location Insights  
+- **Yearly trend (2005–2022):** steady growth until 2020 dip, then **+11.5% rebound in 2021**  
+- **Monthly YOY comparisons:** Florida in March saw peak review volume  
+- **Seasonal review behavior** across states  
+
+---
+
+## 🔑 Key Learnings & Impact  
+- **Data Engineering:** Built ETL pipeline using *Python + Amazon S3 + Snowflake*  
+- **Data Warehousing:** Designed **Snowflake schema** with bridge table for many-to-many relationships  
+- **Analytics:** Applied **sentiment analysis at scale** on millions of records  
+- **BI Visualization:** Delivered **executive-level dashboards** for business strategy insights  
+- **Validation:** Cross-checked results with **SQL + Power BI** to ensure accuracy  
+
+---
+
+## 📌 Use Cases  
+- **Business Teams →** Identify underperforming but high-volume categories  
+- **Marketing →** Track sentiment drivers by city or season  
+- **Strategy →** Prioritize improvements in low-rated states/categories  
+- **Analytics Hiring Portfolio →** Demonstrates end-to-end ownership of a real-world data project  
+
+---
+
+## 👩‍💻 Author  
+**Navina M** | *Data Analyst Portfolio Project*  
+📧 [navina.mk7@gmail.com](mailto:navina.mk7@gmail.com) | 💼 [LinkedIn](https://www.linkedin.com/in/navina-m/) | 🌐 [Portfolio Website](https://navina-murugadas.github.io/Portfolio/)
+
 
