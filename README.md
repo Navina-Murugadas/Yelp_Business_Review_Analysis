@@ -80,3 +80,6 @@ def sentiment_analyzer(text):
     else:
         return 'Negative'
 $$;
+
+---
+✅ Applied on 6.99M reviews to classify Positive / Neutral / Negative sentiment.
