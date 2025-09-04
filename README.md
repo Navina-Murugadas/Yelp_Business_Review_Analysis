@@ -28,8 +28,7 @@ Raw JSON data was ingested, processed, stored, and transformed into a **Snowflak
 ---
 
 ## 🏗️ Data Pipeline Architecture
-![Pipeline Diagram](pipeline.png)  
-*(Your Canva diagram here — already recruiter-ready)*
+![Yelp_Pipeline](https://github.com/user-attachments/assets/c07a4c02-0d04-4e2d-b237-e80dc512ebe7)
 
 **Flow:**  
 Raw Yelp JSON → Python ETL → Amazon S3 → Snowflake DWH (Snowflake Schema + UDF Sentiment) → SQL Validation & Analysis → Power BI Dashboards  
@@ -37,7 +36,7 @@ Raw Yelp JSON → Python ETL → Amazon S3 → Snowflake DWH (Snowflake Schema +
 ---
 
 ## 🗄️ Data Model (Snowflake Schema)
-![Model View](Yelp%20Model%20View.png)
+<img width="1455" height="732" alt="Yelp Model View" src="https://github.com/user-attachments/assets/20168e1a-a816-481e-b774-9225560b9fa3" />
 
 The schema follows a **Snowflake design** with normalized dimensions and a bridge table:  
 
