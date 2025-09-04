@@ -122,6 +122,14 @@ $$;
 
 ---
 
+## 🚀 Live Dashboard  
+
+🔗 [**Click here to explore the interactive Power BI Dashboard**](YOUR_POWERBI_SHARE_LINK)  
+
+*(Best viewed on desktop for full interactivity)*  
+
+---
+
 ## 🔑 Key Learnings & Impact  
 - **Data Engineering:** Built ETL pipeline using *Python + Amazon S3 + Snowflake*  
 - **Data Warehousing:** Designed **Snowflake schema** with bridge table for many-to-many relationships  
