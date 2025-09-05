@@ -1,4 +1,4 @@
-# 📊 Yelp Business & Reviews Analytics
+![Yelp Business Reviews Analysis_page-0001](https://github.com/user-attachments/assets/c55293d6-f8a2-49f3-a9d5-436f665b03c9)# 📊 Yelp Business & Reviews Analytics
 
 ### End-to-End Data Analytics Project | Python · Amazon S3 · Snowflake (Snowflake Schema) · SQL · Power BI · DAX
 
@@ -144,6 +144,30 @@ $$;
 - **Marketing →** Track sentiment drivers by city or season  
 - **Strategy →** Prioritize improvements in low-rated states/categories  
 - **Analytics Hiring Portfolio →** Demonstrates end-to-end ownership of a real-world data project  
+
+---
+
+## 📸 Dashboard Preview 
+### 🖼️ Cover Page
+![Yelp Business Reviews Analysis_page-0001](https://github.com/user-attachments/assets/35d2995f-45e3-43a2-bfe8-90d81f687f06)
+### 📊 Summary Dashboard
+![Yelp Business Reviews Analysis_page-0002](https://github.com/user-attachments/assets/776f2283-2287-4ea8-8690-819c904bf0b6)
+### 📌 Overview Dashboard
+![Yelp Business Reviews Analysis_page-0003](https://github.com/user-attachments/assets/3207c71d-5a70-4bef-b1a0-686544b00019)
+### 🗺️ State Insights
+![Yelp Business Reviews Analysis_page-0004](https://github.com/user-attachments/assets/848c7032-6858-4ad5-8c11-227c45dae9c5)
+### 🏙️ City & Category Insights
+![Yelp Business Reviews Analysis_page-0005](https://github.com/user-attachments/assets/6ab19089-8396-4e3e-a4d2-6b0be6eaac8d)
+### 🌍 Time & Location Insights
+![Yelp Business Reviews Analysis_page-0006](https://github.com/user-attachments/assets/2eeca497-fa53-481c-976a-0457386709aa)
+
+---
+
+### 🔍 Tooltips
+![Yelp Business Reviews Analysis_page-0007](https://github.com/user-attachments/assets/cdf14948-0068-442f-9e2b-e9dd63936aba)
+![Yelp Business Reviews Analysis_page-0008](https://github.com/user-attachments/assets/5b018dde-3c54-4086-b692-597dd677aea8)
+![Yelp Business Reviews Analysis_page-0009](https://github.com/user-attachments/assets/6a8b1fe4-20a6-41c1-88ec-c403c090af7c)
+![Yelp Business Reviews Analysis_page-0010](https://github.com/user-attachments/assets/db17e6dd-2901-4367-84ec-fa59a11e4abd)
 
 ---
 
