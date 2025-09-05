@@ -1,5 +1,3 @@
-![Yelp Business Reviews Analysis_page-0001](https://github.com/user-attachments/assets/c55293d6-f8a2-49f3-a9d5-436f665b03c9)# 📊 Yelp Business & Reviews Analytics
-
 ### End-to-End Data Analytics Project | Python · Amazon S3 · Snowflake (Snowflake Schema) · SQL · Power BI · DAX
 
 ---
