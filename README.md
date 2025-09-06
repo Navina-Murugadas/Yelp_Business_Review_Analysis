@@ -1,3 +1,4 @@
+# 📊 Yelp Business Reviews Analysis
 ### End-to-End Data Analytics Project | Python · Amazon S3 · Snowflake (Snowflake Schema) · SQL · Power BI · DAX
 
 ---
