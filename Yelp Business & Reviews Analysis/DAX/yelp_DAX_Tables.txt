@@ -1,0 +1,28 @@
+-- TABLES:
+
+1) AvgRating_Values = GENERATESERIES(1, 5, 1)
+
+2) TopN_Values = GENERATESERIES(5, 30, 5)
+
+3) Dim_Calendar = 
+    ADDCOLUMNS(
+        CALENDAR(DATE(2005, 1, 1), TODAY()),
+        "Year", YEAR([Date]),
+        "Month Number", MONTH([Date]),
+        "Month", FORMAT([Date], "MMMM"),
+        "Quarter", "Q" & FORMAT([Date], "Q"),
+        "Year-Month", FORMAT([Date], "YYYY-MM"),
+        "YearMonth_Date", DATE(YEAR([Date]), MONTH([Date]), 1),  -- ✅ New: true date at start of month
+        "YearMonth_SortMonthOnly", FORMAT([Date], "YYYYMM"),
+        "YearMonthSort", FORMAT([Date], "YYYYMMDD"),
+        "Weekday", FORMAT([Date], "dddd"),
+        "Day", DAY([Date]),
+        "Is Weekday", IF(WEEKDAY([Date], 2) < 6, TRUE(), FALSE())
+    )
+
+4) Dim_City = DISTINCT(SELECTCOLUMNS(Dim_Business, "City", Dim_Business[City]))
+
+5) Dim_Year = 
+    DISTINCT ( SELECTCOLUMNS ( Dim_Calendar, "Year", Dim_Calendar[Year] ) )
+
+-----------------------------------------------------------------------------------------------------------------------------

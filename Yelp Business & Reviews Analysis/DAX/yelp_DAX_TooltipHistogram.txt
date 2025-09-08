@@ -1,0 +1,54 @@
+-- TOOLTIP HISTOGRAM DAX:
+
+1) TT_Rating_Stars = 
+    VAR Rating = SELECTEDVALUE(Fact_YelpDedupedReviews[Review_Stars])
+    VAR FullStars = REPT("★", Rating)
+    RETURN
+    "Rating: " & Rating & "  " & FullStars
+
+2) TT_ReviewCount = 
+    VAR Rating = SELECTEDVALUE(Fact_YelpDedupedReviews[Review_Stars])
+    VAR BinCount =
+        CALCULATE(
+            COUNTROWS(Fact_YelpDedupedReviews),
+            Fact_YelpDedupedReviews[Review_Stars] = Rating
+        )
+    RETURN
+    FORMAT(BinCount, "#,0")
+
+3) TT_ReviewShare = 
+    VAR Rating = SELECTEDVALUE(Fact_YelpDedupedReviews[Review_Stars])
+    VAR BinCount =
+        CALCULATE(
+            COUNTROWS(Fact_YelpDedupedReviews),
+            Fact_YelpDedupedReviews[Review_Stars] = Rating
+        )
+    VAR TotalCount =
+        CALCULATE(
+            COUNTROWS(Fact_YelpDedupedReviews),
+            ALL(Fact_YelpDedupedReviews[Review_Stars])
+        )
+    VAR Pct = DIVIDE(BinCount, TotalCount, 0)
+    RETURN
+    FORMAT(Pct, "0.0%")
+
+4) TT_ReviewShare_BarOnly = 
+    VAR Rating = SELECTEDVALUE(Fact_YelpDedupedReviews[Review_Stars])
+    VAR BinCount =
+        CALCULATE(
+            COUNTROWS(Fact_YelpDedupedReviews),
+            Fact_YelpDedupedReviews[Review_Stars] = Rating
+        )
+    VAR TotalCount =
+        CALCULATE(
+            COUNTROWS(Fact_YelpDedupedReviews),
+            ALL(Fact_YelpDedupedReviews[Review_Stars])
+        )
+    VAR Pct = DIVIDE(BinCount, TotalCount, 0)
+    VAR TotalBlocks = 10
+    VAR FilledBlocks = ROUND(Pct * TotalBlocks, 0)
+    VAR EmptyBlocks = TotalBlocks - FilledBlocks
+    RETURN
+    REPT("█", FilledBlocks) & REPT("░", EmptyBlocks)
+
+-----------------------------------------------------------------------------------------------------------------------------

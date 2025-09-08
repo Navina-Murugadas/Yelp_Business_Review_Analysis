@@ -1,0 +1,108 @@
+-- SUMMARY PAGE DAX:
+
+1) Total Businesses = 
+    VAR BizCount = DISTINCTCOUNT ( Dim_Business[BUSINESS_ID] )
+    RETURN 
+    SWITCH (
+        TRUE(),
+        BizCount >= 1000000, FORMAT ( DIVIDE ( BizCount, 1000000 ), "0.#" ) & "M",
+        BizCount >= 1000, FORMAT ( DIVIDE ( BizCount, 1000 ), "0.#" ) & "K",
+        FORMAT ( BizCount, "#,0" )
+    )
+
+2) Avg Rating HTML = 
+    VAR AvgVal = ROUND( [Average Rating], 2 )
+    RETURN
+    "<span style='color:#605E5C; font-size:16px;'>Average Rating:</span> " &
+    "<span style='font-size:18px; font-weight:bold;'>" & AvgVal & " ⭐</span>"
+
+3) Total Businesses = 
+    VAR BizCount = DISTINCTCOUNT ( Dim_Business[BUSINESS_ID] )
+    RETURN 
+    SWITCH (
+        TRUE(),
+        BizCount >= 1000000, FORMAT ( DIVIDE ( BizCount, 1000000 ), "0.#" ) & "M",
+        BizCount >= 1000, FORMAT ( DIVIDE ( BizCount, 1000 ), "0.#" ) & "K",
+        FORMAT ( BizCount, "#,0" )
+    )
+
+4) States Covered = DISTINCTCOUNT( DIM_STATE[STATENAME] )
+
+5) Cities Covered = 
+    VAR CityCount = DISTINCTCOUNT ( Dim_City[City] )
+    RETURN 
+    IF (
+        CityCount >= 10000,
+        FORMAT ( DIVIDE ( CityCount, 1000 ), "0.#" ) & "K",
+        FORMAT ( CityCount, "#,0" )
+    )
+
+6) ExecutiveSummary = 
+    "
+    <div style='font-family:Segoe UI; text-align:justify; line-height:1.6;'>
+
+    <div style='font-size:20px; font-weight:bold; margin-bottom:12px; color:#333333;'>
+        📝 EXECUTIVE SUMMARY
+    </div>
+
+    <div style='font-size:14px;'>
+        This analysis examines <b>≈7M Yelp reviews</b> spanning 
+        <b>2005–2022</b> to surface trends in review volume, average ratings, 
+        and customer sentiment across categories and geographies. 
+        <br><br>
+        <b>🎯 The goal:</b> To provide business teams with prioritized signals for 
+        <b>improvement</b> and <b>growth</b> — where to focus operational changes, 
+        marketing, or product investments.
+    </div>
+
+    </div>
+    "
+
+7) KeyFindings_HTML = 
+    "
+    <div style='font-family:Segoe UI; font-size:13px; text-align:justify; line-height:1.5;'>
+
+    <div style='font-size:18px; font-weight:bold; margin-bottom:10px; color:#333333;'>
+        🔑 KEY FINDINGS
+    </div>
+
+    <div style='font-size:13px;'>
+        <p>✅ <b>Positive feedback dominates</b>, but category and location variations reveal opportunities to convert negative sentiment into growth.</p>
+
+        <p>📊 <b>Volume ≠ quality:</b> Large categories (e.g., Restaurants) attract the most reviews but don’t always score highest; niche categories often outperform on satisfaction.</p>
+
+        <p>🌍<b>Geographic diversity:</b> Some cities consistently achieve higher ratings, while others show polarized sentiment patterns requiring localized strategies.</p>
+
+        <p>🎯<b>Strategic recommendation:</b> Prioritize high-volume categories with below-average ratings (training, audits), while scaling best practices from top-performing cities.</p>
+    </div>
+    </div>
+    "
+
+8) Footer = 
+    "
+    <div style='font-size:9pt; color:#666666; width:100%; display:flex; justify-content:space-between;'>
+        <div>Python · Amazon S3 · Snowflake (SQL) · Power BI · DAX</div>
+        <div>Built by <b>Navina M · </b>Data Analyst Portfolio Project</div>
+    </div>
+    "
+
+9)TopN_Tooltip_HTML = 
+    "
+    <div style='font-family:Segoe UI; font-size:11px; color:#333333; line-height:1.4;'>
+    <h3 style='margin:0; font-size:13px; color:#444444;'>🔢 Top N Selector</h3>
+    <p style='margin:0; margin-top:4px;'>
+        This dropdown controls how many <b>Cities</b> or <b>Categories</b> are displayed in the charts.
+    </p>
+    <p style='margin:0; margin-top:4px;'>For example:</p>
+    <ul style='margin:0; padding-left:15px;'>
+        <li><b>Top 5</b> → shows only the best 5</li>
+        <li><b>Top 10</b> → shows the best 10</li>
+        <li><b>Top 20</b> → shows the best 20</li>
+    </ul>
+    <p style='margin:0; margin-top:4px;'>Charts update dynamically based on your selection.</p>
+    </div>
+    "
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+

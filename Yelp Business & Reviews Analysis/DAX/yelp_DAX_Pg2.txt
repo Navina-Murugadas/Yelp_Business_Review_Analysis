@@ -1,0 +1,297 @@
+-- PAGE 2 DAX:
+
+1) Total Reviews (City, Year) = 
+    VAR _Dates  = CALCULATETABLE( VALUES( Dim_Calendar[Date] ) )
+    VAR _States = CALCULATETABLE( VALUES( DIM_STATE[STATEABBR] ) )
+    VAR _Cities = CALCULATETABLE( VALUES( Dim_City[City] ) )
+    RETURN
+    CALCULATE(
+        DISTINCTCOUNT( vw_Unpivoted_Reviews[REVIEW_ID] ),
+        KEEPFILTERS( TREATAS( _Dates,  vw_Unpivoted_Reviews[REVIEW_DATE] ) ),
+        KEEPFILTERS( TREATAS( _States, vw_Unpivoted_Reviews[STATE] ) ),
+        KEEPFILTERS( TREATAS( _Cities, vw_Unpivoted_Reviews[CITY] ) )
+    )
+
+
+2) Formatted TotalReviews_Pg2 = 
+    VAR reviews = [Total Reviews (City, Year)]
+    RETURN 
+        IF(reviews >= 1000000,
+            FORMAT(reviews / 1000000, "0.00") & "M",
+            IF(reviews >= 1000,
+                FORMAT(reviews / 1000, "0.00") & "K",
+                FORMAT(reviews, "0")
+            )
+        )
+
+3) Total Reviews (Cat, Year) = 
+    VAR _Dates =
+        CALCULATETABLE( VALUES(Dim_Calendar[Date]) )
+    VAR _States =
+        CALCULATETABLE( VALUES(DIM_STATE[STATEABBR]) )
+    RETURN
+    CALCULATE(
+        COUNTROWS(vw_Unpivoted_Reviews),
+        KEEPFILTERS( TREATAS(_Dates, vw_Unpivoted_Reviews[REVIEW_DATE]) ),
+        KEEPFILTERS( TREATAS(_States, vw_Unpivoted_Reviews[STATE]) )
+    )
+
+4) Average Rating (Cat, Year) = 
+    VAR _Dates =
+        CALCULATETABLE( VALUES(Dim_Calendar[Date]) )
+    VAR _States =
+        CALCULATETABLE( VALUES(DIM_STATE[STATEABBR]) )
+    RETURN
+    CALCULATE(
+        AVERAGE(vw_Unpivoted_Reviews[REVIEW_STARS]),
+        KEEPFILTERS( TREATAS(_Dates, vw_Unpivoted_Reviews[REVIEW_DATE]) ),
+        KEEPFILTERS( TREATAS(_States, vw_Unpivoted_Reviews[STATE]) )
+    )
+
+5) AvgRating_ByCategory = 
+    CALCULATE(
+        AVERAGE('Fact_YelpDedupedReviews'[review_stars]),
+        REMOVEFILTERS('Dim_Category'),
+        KEEPFILTERS(VALUES('DIM_CATEGORY'[CATEGORY])),
+        KEEPFILTERS(VALUES('Dim_State'[StateName]))
+    )
+
+6) AvgRating_National = CALCULATE( [Average Rating], ALL('Dim_State') )
+
+7) AvgRating_Diff = 
+    VAR diff = [Average Rating] - [AvgRating_National]
+    RETURN IF( ISBLANK(diff), BLANK(),
+            IF( diff > 0, "+" & FORMAT(diff, "0.00"), FORMAT(diff, "0.00") ) )
+
+8) AvgRating_Diff_Color = 
+    VAR diff = [Average Rating] - [AvgRating_National]
+    RETURN
+        IF(
+            diff > 0, 
+            "#B6E3B6",   // light green
+            IF(
+                diff < 0, 
+                "#F5B6B6", // light red
+                "#E0E0E0"  // neutral gray for exactly zero or blank
+            )
+        )
+
+9) AvgRating_Monthly = 
+    VAR SelectedState = SELECTEDVALUE('Dim_State'[StateName])
+    RETURN
+        CALCULATE(
+            AVERAGE('Fact_YelpDedupedReviews'[review_stars]),
+            'Dim_State'[StateName] = SelectedState
+        )
+
+10) ReviewSize_Log = LOG10([Total Reviews] + 1)
+ 
+11) Bubble Size (Cat, Year) = 
+    SQRT( [Total Reviews (Cat, Year)] )  
+
+12) City Rank by Reviews = 
+    RANKX(
+        ALLSELECTED( Dim_City[City] ),
+        [Total Reviews (City, Year)],
+        ,
+        DESC,
+        DENSE
+    )
+
+13) Rank Category by Reviews (Year-aware) = 
+    RANKX(
+        ALLSELECTED('DIM_CATEGORY'[CATEGORY]),     -- rank within current page filters (e.g., state)
+        [Total Reviews (Cat, Year)],
+        ,
+        DESC,
+        DENSE
+    )
+
+14) SelectedTopN = 
+    SELECTEDVALUE(TopN_Values[Value], 5)  -- Default to 5
+
+15) Show TopN Flag = 
+    VAR n = [SelectedTopN]
+    RETURN IF( [Rank Category by Reviews (Year-aware)] <= n, 1, 0 )
+
+16) Show City (TopN) = 
+    IF ( [City Rank by Reviews] <= [SelectedTopN], 1, 0 )
+
+17) SelectedYears = 
+    VAR SelYearsTable =
+        VALUES ( Dim_Calendar[Year] )
+    VAR SelYearCount =
+        COUNTROWS ( SelYearsTable )
+    VAR TotalYears =
+        CALCULATE ( DISTINCTCOUNT ( Dim_Calendar[Year] ), ALL ( Dim_Calendar ) )
+    VAR MinYear =
+        MINX ( SelYearsTable, Dim_Calendar[Year] )
+    VAR MaxYear =
+        MAXX ( SelYearsTable, Dim_Calendar[Year] )
+    VAR IsConsecutive =
+        SelYearCount = MaxYear - MinYear + 1
+    VAR YearText =
+        SWITCH (
+            TRUE(),
+            SelYearCount = TotalYears, "All Years",
+            SelYearCount = 1, FORMAT ( MinYear, "####" ),
+            IsConsecutive, FORMAT ( MinYear, "####" ) & "–" & FORMAT ( MaxYear, "####" ),
+            SelYearCount <= 2,
+                CONCATENATEX (
+                    SelYearsTable,
+                    FORMAT ( Dim_Calendar[Year], "####" ),
+                    ", ",
+                    Dim_Calendar[Year], ASC
+                ),
+            "Multiple Years"
+        )
+    RETURN
+        YearText
+
+18) Mapvisual_Subtitle = 
+    VAR TotalYears =
+        CALCULATE(
+            DISTINCTCOUNT(Dim_Calendar[Year]),
+            ALL(Dim_Calendar)
+        )
+    VAR SelYearsTable =
+        VALUES(Dim_Calendar[Year])
+    VAR SelYearCount =
+        COUNTROWS(SelYearsTable)
+    VAR MinYear =
+        MINX(SelYearsTable, Dim_Calendar[Year])
+    VAR MaxYear =
+        MAXX(SelYearsTable, Dim_Calendar[Year])
+    VAR IsConsecutive =
+        SelYearCount = (MaxYear - MinYear + 1)
+    VAR YearText =
+        SWITCH(
+            TRUE(),
+            SelYearCount = TotalYears, "All Years",
+            SelYearCount = 1, FORMAT(MinYear, "0"),
+            IsConsecutive, FORMAT(MinYear, "0") & "–" & FORMAT(MaxYear, "0"),
+            SelYearCount <= 2, 
+                CONCATENATEX(
+                    SelYearsTable,
+                    FORMAT(Dim_Calendar[Year], "0"),
+                    ", ",
+                    Dim_Calendar[Year],
+                    ASC
+                ),
+            "Multiple Years"
+        )
+    RETURN
+    "U.S. states, territories, and Canadian provinces (" & YearText & ")"
+
+19) Subtitle_Pg2 = 
+    -- Year logic
+    VAR TotalYears =
+        CALCULATE(
+            DISTINCTCOUNT(Dim_Year[Year]),
+            ALL(Dim_Year)
+        )
+    VAR SelYearsTable = VALUES(Dim_Year[Year])
+    VAR SelYearCount = COUNTROWS(SelYearsTable)
+    VAR MinYear = MINX(SelYearsTable, Dim_Year[Year])
+    VAR MaxYear = MAXX(SelYearsTable, Dim_Year[Year])
+    VAR IsConsecutive = SelYearCount = (MaxYear - MinYear + 1)
+    VAR YearText =
+        SWITCH(
+            TRUE(),
+            SelYearCount = TotalYears, "Years: All Years",
+            SelYearCount = 1, "Year: " & MinYear,
+            IsConsecutive, "Years: " & MinYear & "–" & MaxYear,
+            SelYearCount = 2,
+                "Years: " &
+                CONCATENATEX(
+                    SelYearsTable,
+                    Dim_Year[Year],
+                    ", ",
+                    Dim_Year[Year],
+                    ASC
+                ),
+            "Years: Multiple Years"
+        )
+
+    -- State logic
+    VAR SelStates =
+        VALUES ( Dim_State[StateName] )
+    VAR StateCount =
+        COUNTROWS ( SelStates )
+    VAR AllStateCount =
+        COUNTROWS ( ALL ( Dim_State[StateName] ) )
+    VAR StatePart =
+        SWITCH (
+            TRUE (),
+            StateCount = AllStateCount, "All States",
+            StateCount = 1, SELECTEDVALUE ( Dim_State[StateName] ),
+            StateCount = 2, 
+                CONCATENATEX (
+                    SelStates,
+                    Dim_State[StateName],
+                    ", ",
+                    Dim_State[StateName],
+                    ASC
+                ),
+            "Multiple States"
+        )
+    RETURN
+    StatePart & "  |  " & YearText
+
+20) Subtitle_Pg2_WithYear = 
+    -- Year logic
+    VAR TotalYears =
+        CALCULATE(
+            DISTINCTCOUNT(Dim_Year[Year]),
+            ALL(Dim_Year)
+        )
+    VAR SelYearsTable = VALUES(Dim_Year[Year])
+    VAR SelYearCount = COUNTROWS(SelYearsTable)
+    VAR MinYear = MINX(SelYearsTable, Dim_Year[Year])
+    VAR MaxYear = MAXX(SelYearsTable, Dim_Year[Year])
+    VAR IsConsecutive = SelYearCount = (MaxYear - MinYear + 1)
+    VAR SelTopN = SELECTEDVALUE(TopN_Values[Value], "All")
+    VAR YearText =
+        SWITCH(
+            TRUE(),
+            SelYearCount = TotalYears, "All Years",
+            SelYearCount = 1, MinYear,
+            IsConsecutive, MinYear & "–" & MaxYear,
+            SelYearCount = 2,
+                "Years: " &
+                CONCATENATEX(
+                    SelYearsTable,
+                    Dim_Year[Year],
+                    ", ",
+                    Dim_Year[Year],
+                    ASC
+                ),
+            "Multiple Years"
+        )
+
+    -- State logic
+    VAR SelStates =
+        VALUES ( Dim_State[StateName] )
+    VAR StateCount =
+        COUNTROWS ( SelStates )
+    VAR AllStateCount =
+        COUNTROWS ( ALL ( Dim_State[StateName] ) )
+    VAR StatePart =
+        SWITCH (
+            TRUE (),
+            StateCount = AllStateCount, "All States",
+            StateCount = 1, SELECTEDVALUE ( Dim_State[StateName] ),
+            StateCount = 2, 
+                CONCATENATEX (
+                    SelStates,
+                    Dim_State[StateName],
+                    ", ",
+                    Dim_State[StateName],
+                    ASC
+                ),
+            "Multiple States"
+        )
+    RETURN
+    StatePart & "  |  " & YearText & "  |  " & "Top " & SelTopN
+    
+-----------------------------------------------------------------------------------------------------------------------------

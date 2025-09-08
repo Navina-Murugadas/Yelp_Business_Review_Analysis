@@ -1,0 +1,197 @@
+-- PAGE 4 DAX:
+
+1) Selected Years_P4 = 
+    VAR SelectedMinYear = CALCULATE(MIN('Dim_Calendar'[Year]), ALLSELECTED('Dim_Calendar'))
+    VAR SelectedMaxYear = CALCULATE(MAX('Dim_Calendar'[Year]), ALLSELECTED('Dim_Calendar'))
+    VAR YearCount = CALCULATE(DISTINCTCOUNT('Dim_Calendar'[Year]), ALLSELECTED('Dim_Calendar'))
+
+    RETURN
+        IF(
+            ISFILTERED('Dim_Calendar'[Year]),
+            "Review activity during: " &
+            IF(
+                YearCount = 1,
+                SelectedMinYear,
+                SelectedMinYear & " – " & SelectedMaxYear
+            ),
+            "Review activity across all available years"
+        )
+
+2) Page4_Reviews_CurrentYear = 
+    CALCULATE(
+        COUNTROWS(FACT_YELPDEDUPEDREVIEWS),
+        YEAR(FACT_YELPDEDUPEDREVIEWS[REVIEW_DATE]) = MAX(Dim_Calendar[Year])
+    )
+
+3) Page4_Reviews_LastYear = 
+    CALCULATE(
+        COUNTROWS(FACT_YELPDEDUPEDREVIEWS),
+        SAMEPERIODLASTYEAR(Dim_Calendar[Date])
+    )
+
+4) Median Total Reviews (State) = 
+    MEDIANX(
+        VALUES(Dim_Business[State]),
+        CALCULATE([Total Reviews])
+    )
+
+5) YoY % Change in Reviews_P4 = 
+    VAR SelectedYear = SELECTEDVALUE('Dim_Calendar'[Year])
+    VAR CurrYearReviews =
+        CALCULATE(
+            [Total Reviews],
+            'Dim_Calendar'[Year] = SelectedYear
+        )
+    VAR PrevYearReviews =
+        CALCULATE(
+            [Total Reviews],
+            'Dim_Calendar'[Year] = SelectedYear - 1
+        )
+    RETURN
+        IF(
+            NOT ISBLANK(PrevYearReviews),
+            DIVIDE(CurrYearReviews - PrevYearReviews, PrevYearReviews)
+        )
+
+6) YoY Change Display_P4 = 
+    VAR YoY = [YoY % Change in Reviews_P4]
+    RETURN
+        IF(
+            YoY > 0,
+            "+" & FORMAT(YoY, "0.0%"),
+            IF(
+                YoY < 0,
+                "-" & FORMAT(ABS(YoY), "0.0%"),
+                "No Change"
+            )
+        )
+
+7) YoY Change Icon (Formatted) = 
+    VAR YoY = [YoY % Change in Reviews_P4]
+    VAR Arrow =
+        SWITCH(
+            TRUE(),
+            YoY > 0, "<span style='color:green;'>▲</span>",
+            YoY < 0, "<span style='color:red;'>▼</span>",
+            "--"
+        )
+    VAR PercentText =
+        IF(
+            ISNUMBER(YoY),
+            "<span style='font-weight:bold;color:black;'>" & FORMAT(ABS(YoY), "0.0%") & "</span>",
+            "--"
+        )
+    RETURN
+        "<div style='text-align:center;'>
+            <div style='font-size:12px;color:gray;'>YoY Change</div>
+            <div style='font-size:20px;'>" & Arrow & " " & PercentText & "</div>
+        </div>"
+
+
+8) MonthlyTrendSubtitle_P4 = 
+    VAR SelectedYear = SELECTEDVALUE('Dim_Calendar'[Year])
+    RETURN
+        "Monthly comparison: " & SelectedYear - 1 & " vs " & SelectedYear
+
+9) Map_Subtitle = 
+    VAR MinYear = MIN('Dim_Calendar'[Year])
+    VAR MaxYear = MAX('Dim_Calendar'[Year])
+    RETURN
+        IF(
+            MinYear = MaxYear,
+            "Total reviews in " & MinYear,
+            "Total reviews from " & MinYear & " to " & MaxYear
+        )
+
+10) Heatmap Subtitle = 
+    "Review volume by month for year " & SELECTEDVALUE(Dim_Calendar[Year])
+
+11) Insight_TextBox_P4 = 
+    VAR SelectedYear = SELECTEDVALUE('Dim_Calendar'[Year])
+    VAR CurrYear = SelectedYear
+    VAR PrevYear = SelectedYear - 1
+
+    -- Review Counts
+    VAR CurrYearReviews = 
+        CALCULATE(
+            [Total Reviews],
+            'Dim_Calendar'[Year] = CurrYear
+        )
+
+    VAR PrevYearReviews = 
+        CALCULATE(
+            [Total Reviews],
+            'Dim_Calendar'[Year] = PrevYear
+        )
+
+    -- YoY Change Display
+    VAR YoYChange = [YoY Change Display_P4]
+
+    -- Top State in Current Year
+    VAR TopState_CurrentYear =
+        CALCULATE(
+            MAX('DIM_STATE'[STATENAME]),
+            TOPN(
+                1,
+                VALUES('DIM_STATE'[STATENAME]),
+                CALCULATE([Total Reviews], 'Dim_Calendar'[Year] = CurrYear),
+                DESC
+            )
+        )
+
+    -- Bottom State in Previous Year
+    VAR BottomState_CurrYear =
+        CALCULATE(
+            MIN('DIM_STATE'[STATENAME]),
+            TOPN(
+                1,
+                VALUES('DIM_STATE'[STATENAME]),
+                CALCULATE([Total Reviews], 'Dim_Calendar'[Year] = CurrYear),
+                ASC
+            )
+        )
+
+    -- Month with highest activity for Top State
+    VAR TopState_TopMonth =
+        CALCULATE(
+            MAX('Dim_Calendar'[Month]),
+            TOPN(
+                1,
+                VALUES('Dim_Calendar'[Month]),
+                CALCULATE(
+                    [Total Reviews],
+                    'Dim_Calendar'[Year] = CurrYear,
+                    'DIM_STATE'[STATENAME] = TopState_CurrentYear
+                ),
+                DESC
+            )
+        )
+
+    -- Month with lowest activity for Bottom State
+    VAR BottomState_BottomMonth =
+        CALCULATE(
+            MAX('Dim_Calendar'[Month]),
+            TOPN(
+                1,
+                VALUES('Dim_Calendar'[Month]),
+                CALCULATE(
+                    [Total Reviews],
+                    'Dim_Calendar'[Year] = CurrYear,
+                    'DIM_STATE'[STATENAME] = BottomState_CurrYear
+                ),
+                ASC
+            )
+        )
+
+    RETURN
+    "In <b>" & CurrYear & "</b>, Yelp has recorded a total of <b>" & 
+        FORMAT(DIVIDE(CurrYearReviews, 1000000), "0.00") & "M</b> reviews, compared to <b>" & 
+        FORMAT(DIVIDE(PrevYearReviews, 1000000), "0.00") & "M</b> reviews in <b>" & PrevYear & "</b>. " & 
+        "This represents a <span style='color:" & IF([YoY % Change in Reviews_P4] > 0, "#00BF00", "#D32323") & 
+        "; font-size:1.2em;'><b>" & YoYChange & "</b></span> in review activity year-over-year. " & 
+        "The <b>highest</b> activity was seen in the state of <b>" & TopState_CurrentYear & 
+        "</b> during <b>" & TopState_TopMonth & 
+        "</b>, while the <b>lowest</b> activity came from <b>" & BottomState_CurrYear & 
+        "</b> in <b>" & BottomState_BottomMonth & "</b>."
+
+-----------------------------------------------------------------------------------------------------------------------------

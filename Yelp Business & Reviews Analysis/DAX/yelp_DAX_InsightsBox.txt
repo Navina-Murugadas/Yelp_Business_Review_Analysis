@@ -1,0 +1,248 @@
+-- INSIGHTS BOX (COMPACT/DETAILED):
+
+1) Insights_Pg2_Compact = 
+    -- ------------------------------
+    -- STATE INSIGHTS (Ignore State slicer)
+    -- ------------------------------
+    VAR SummaryState =
+        FILTER (
+            ADDCOLUMNS (
+                SUMMARIZE ( ALL ( 'Dim_State' ), 'Dim_State'[StateName] ),
+                "TotalReviews", CALCULATE ( [Total Reviews] ),
+                "AvgRating", CALCULATE ( AVERAGE ( 'Fact_YelpDedupedReviews'[review_stars] ) )
+            ),
+            NOT ISBLANK ( [StateName] ) && [StateName] <> ""
+        )
+
+    VAR MaxReviewsState = MAXX(SummaryState, [TotalReviews])
+    VAR MinReviewsState = MINX(SummaryState, [TotalReviews])
+    VAR TopReviewedStates = FILTER(SummaryState, [TotalReviews] = MaxReviewsState)
+    VAR LowReviewedStates = FILTER(SummaryState, [TotalReviews] = MinReviewsState)
+
+    VAR TopReviewedStateNames =
+        VAR StateList = SELECTCOLUMNS(TopReviewedStates, "State", 'Dim_State'[StateName])
+        VAR FirstState = MINX(StateList, [State])
+        VAR OtherCount = COUNTROWS(StateList) - 1
+        RETURN FirstState & IF(OtherCount = 1, " + 1 other", IF(OtherCount > 1, " + " & OtherCount & " others", ""))
+
+    VAR LowReviewedStateNames =
+        VAR StateList = SELECTCOLUMNS(LowReviewedStates, "State", 'Dim_State'[StateName])
+        VAR FirstState = MINX(StateList, [State])
+        VAR OtherCount = COUNTROWS(StateList) - 1
+        RETURN FirstState & IF(OtherCount = 1, " + 1 other", IF(OtherCount > 1, " + " & OtherCount & " others", ""))
+
+    VAR FormattedTopReviewsState = 
+        IF(MaxReviewsState >= 1000000, FORMAT(MaxReviewsState/1000000,"0.0") & "M",
+        IF(MaxReviewsState >=1000, FORMAT(MaxReviewsState/1000,"0.0") & "K", FORMAT(MaxReviewsState,"0")))
+
+    VAR FormattedLowReviewsState = 
+        IF(MinReviewsState >= 1000000, FORMAT(MinReviewsState/1000000,"0.0") & "M",
+        IF(MinReviewsState >=1000, FORMAT(MinReviewsState/1000,"0.0") & "K", FORMAT(MinReviewsState,"0")))
+
+    VAR MaxRatingState = MAXX(SummaryState, [AvgRating])
+    VAR MinRatingState = MINX(SummaryState, [AvgRating])
+    VAR TopRatedStates = FILTER(SummaryState, [AvgRating] = MaxRatingState)
+    VAR LowRatedStates = FILTER(SummaryState, [AvgRating] = MinRatingState)
+
+    VAR TopRatedStateNames =
+        VAR StateList = SELECTCOLUMNS(TopRatedStates, "State", 'Dim_State'[StateName])
+        VAR FirstState = MINX(StateList, [State])
+        VAR OtherCount = COUNTROWS(StateList) - 1
+        RETURN FirstState & IF(OtherCount = 1, " + 1 other", IF(OtherCount > 1, " + " & OtherCount & " others", ""))
+
+    VAR LowRatedStateNames =
+        VAR StateList = SELECTCOLUMNS(LowRatedStates, "State", 'Dim_State'[StateName])
+        VAR FirstState = MINX(StateList, [State])
+        VAR OtherCount = COUNTROWS(StateList) - 1
+        RETURN FirstState & IF(OtherCount = 1, " + 1 other", IF(OtherCount > 1, " + " & OtherCount & " others", ""))
+
+    -- ------------------------------
+    -- CATEGORY INSIGHTS (Respect State slicer)
+    -- ------------------------------
+    VAR _Dates = CALCULATETABLE(VALUES(Dim_Calendar[Date]))
+    VAR _StatesFilter = CALCULATETABLE(VALUES(DIM_STATE[STATEABBR]))
+
+    VAR SummaryCategory =
+        ADDCOLUMNS(
+            SUMMARIZE(DIM_CATEGORY, DIM_CATEGORY[CATEGORY]),
+            "TotalReviews", CALCULATE(
+                COUNTROWS(vw_Unpivoted_Reviews),
+                KEEPFILTERS(TREATAS(_Dates, vw_Unpivoted_Reviews[REVIEW_DATE])),
+                KEEPFILTERS(TREATAS(_StatesFilter, vw_Unpivoted_Reviews[STATE]))
+            ),
+            "AvgRating", CALCULATE(
+                AVERAGE(vw_Unpivoted_Reviews[REVIEW_STARS]),
+                KEEPFILTERS(TREATAS(_Dates, vw_Unpivoted_Reviews[REVIEW_DATE])),
+                KEEPFILTERS(TREATAS(_StatesFilter, vw_Unpivoted_Reviews[STATE]))
+            )
+        )
+
+    VAR MaxReviewsCat = MAXX(SummaryCategory, [TotalReviews])
+    VAR MinReviewsCat = MINX(SummaryCategory, [TotalReviews])
+    VAR TopReviewedCategories = FILTER(SummaryCategory, [TotalReviews] = MaxReviewsCat)
+    VAR LowReviewedCategories = FILTER(SummaryCategory, [TotalReviews] = MinReviewsCat)
+
+    VAR TopReviewedCatNames =
+        VAR CatList = SELECTCOLUMNS(TopReviewedCategories, "Cat", DIM_CATEGORY[CATEGORY])
+        VAR FirstCat = MINX(CatList, [Cat])
+        VAR OtherCount = COUNTROWS(CatList) - 1
+        RETURN FirstCat & IF(OtherCount = 1, " + 1 other", IF(OtherCount > 1, " + " & OtherCount & " others", ""))
+
+    VAR LowReviewedCatNames =
+        VAR CatList = SELECTCOLUMNS(LowReviewedCategories, "Cat", DIM_CATEGORY[CATEGORY])
+        VAR FirstCat = MINX(CatList, [Cat])
+        VAR OtherCount = COUNTROWS(CatList) - 1
+        RETURN FirstCat & IF(OtherCount = 1, " + 1 other", IF(OtherCount > 1, " + " & OtherCount & " others", ""))
+
+    VAR FormattedTopReviewsCat = 
+        IF(MaxReviewsCat >= 1000000, FORMAT(MaxReviewsCat/1000000,"0.0") & "M",
+        IF(MaxReviewsCat >=1000, FORMAT(MaxReviewsCat/1000,"0.0") & "K", FORMAT(MaxReviewsCat,"0")))
+
+    VAR FormattedLowReviewsCat = 
+        IF(MinReviewsCat >= 1000000, FORMAT(MinReviewsCat/1000000,"0.0") & "M",
+        IF(MinReviewsCat >=1000, FORMAT(MinReviewsCat/1000,"0.0") & "K", FORMAT(MinReviewsCat,"0")))
+
+    VAR MaxRatingCat = MAXX(SummaryCategory, [AvgRating])
+    VAR MinRatingCat = MINX(SummaryCategory, [AvgRating])
+    VAR TopRatedCategories = FILTER(SummaryCategory, [AvgRating] = MaxRatingCat)
+    VAR LowRatedCategories = FILTER(SummaryCategory, [AvgRating] = MinRatingCat)
+
+    VAR TopRatedCatNames =
+        VAR CatList = SELECTCOLUMNS(TopRatedCategories, "Cat", DIM_CATEGORY[CATEGORY])
+        VAR FirstCat = MINX(CatList, [Cat])
+        VAR OtherCount = COUNTROWS(CatList) - 1
+        RETURN FirstCat & IF(OtherCount = 1, " + 1 other", IF(OtherCount > 1, " + " & OtherCount & " others", ""))
+
+    VAR LowRatedCatNames =
+        VAR CatList = SELECTCOLUMNS(LowRatedCategories, "Cat", DIM_CATEGORY[CATEGORY])
+        VAR FirstCat = MINX(CatList, [Cat])
+        VAR OtherCount = COUNTROWS(CatList) - 1
+        RETURN FirstCat & IF(OtherCount = 1, " + 1 other", IF(OtherCount > 1, " + " & OtherCount & " others", ""))
+
+    -- ------------------------------
+    -- FINAL HTML RETURN
+    -- ------------------------------
+    RETURN
+    "<b>STATE INSIGHTS</b><br>" &
+    "<span style='color:#666666;'> 📌 Highest reviewed state: </span><b style='color:#00BF00;'>" & TopReviewedStateNames & "</b> - <b>" & FormattedTopReviewsState & "</b> reviews<br>" &
+    "<span style='color:#666666;'> 📌 Lowest reviewed state: </span><b style='color:#D32323;'>" & LowReviewedStateNames & "</b> - <b>" & FormattedLowReviewsState & "</b> reviews<br>" &
+    "<span style='color:#666666;'> 📌 Highest rated state: </span><b style='color:#00BF00;'>" & TopRatedStateNames & "</b> - <b>" & FORMAT(MaxRatingState,"0.00") & "</b> average rating<br>" &
+    "<span style='color:#666666;'> 📌 Lowest rated state: </span><b style='color:#D32323;'>" & LowRatedStateNames & "</b> - <b>" & FORMAT(MinRatingState,"0.00") & "</b> average rating<br><br>" &
+    "<b>CATEGORY INSIGHTS</b><br>" &
+    "<span style='color:#666666;'> 📌 Highest reviewed category: </span><b style='color:#00BF00;'>" & TopReviewedCatNames & "</b> - <b>" & FormattedTopReviewsCat & "</b> reviews<br>" &
+    "<span style='color:#666666;'> 📌 Lowest reviewed category: </span><b style='color:#D32323;'>" & LowReviewedCatNames & "</b> - <b>" & FormattedLowReviewsCat & "</b> reviews<br>" &
+    "<span style='color:#666666;'> 📌 Highest rated category: </span><b style='color:#00BF00;'>" & TopRatedCatNames & "</b> - <b>" & FORMAT(MaxRatingCat,"0.00") & "</b> avg rating<br>" &
+    "<span style='color:#666666;'> 📌 Lowest rated category: </span><b style='color:#D32323;'>" & LowRatedCatNames & "</b> - <b>" & FORMAT(MinRatingCat,"0.00") & "</b> avg rating"
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2) Insights_Pg2_Compact_NoOthers = 
+    -- ------------------------------
+    -- STATE INSIGHTS (Ignore State slicer)
+    -- ------------------------------
+    VAR SummaryState =
+        FILTER (
+            ADDCOLUMNS (
+                SUMMARIZE ( ALL ( 'Dim_State' ), 'Dim_State'[StateName] ),
+                "TotalReviews", CALCULATE ( [Total Reviews] ),
+                "AvgRating", CALCULATE ( AVERAGE ( 'Fact_YelpDedupedReviews'[review_stars] ) )
+            ),
+            NOT ISBLANK ( [StateName] ) && [StateName] <> ""
+        )
+
+    VAR MaxReviewsState = MAXX(SummaryState, [TotalReviews])
+    VAR MinReviewsState = MINX(SummaryState, [TotalReviews])
+    VAR TopReviewedStates = FILTER(SummaryState, [TotalReviews] = MaxReviewsState)
+    VAR LowReviewedStates = FILTER(SummaryState, [TotalReviews] = MinReviewsState)
+
+    VAR TopReviewedStateNames =
+        CONCATENATEX(SELECTCOLUMNS(TopReviewedStates, "State", 'Dim_State'[StateName]), [State], ", ")
+
+    VAR LowReviewedStateNames =
+        CONCATENATEX(SELECTCOLUMNS(LowReviewedStates, "State", 'Dim_State'[StateName]), [State], ", ")
+
+    VAR FormattedTopReviewsState = 
+        IF(MaxReviewsState >= 1000000, FORMAT(MaxReviewsState/1000000,"0.0") & "M",
+        IF(MaxReviewsState >=1000, FORMAT(MaxReviewsState/1000,"0.0") & "K", FORMAT(MaxReviewsState,"0")))
+
+    VAR FormattedLowReviewsState = 
+        IF(MinReviewsState >= 1000000, FORMAT(MinReviewsState/1000000,"0.0") & "M",
+        IF(MinReviewsState >=1000, FORMAT(MinReviewsState/1000,"0.0") & "K", FORMAT(MinReviewsState,"0")))
+
+    VAR MaxRatingState = MAXX(SummaryState, [AvgRating])
+    VAR MinRatingState = MINX(SummaryState, [AvgRating])
+    VAR TopRatedStates = FILTER(SummaryState, [AvgRating] = MaxRatingState)
+    VAR LowRatedStates = FILTER(SummaryState, [AvgRating] = MinRatingState)
+
+    VAR TopRatedStateNames =
+        CONCATENATEX(SELECTCOLUMNS(TopRatedStates, "State", 'Dim_State'[StateName]), [State], ", ")
+
+    VAR LowRatedStateNames =
+        CONCATENATEX(SELECTCOLUMNS(LowRatedStates, "State", 'Dim_State'[StateName]), [State], ", ")
+
+    -- ------------------------------
+    -- CATEGORY INSIGHTS (Respect State slicer)
+    -- ------------------------------
+    VAR _Dates = CALCULATETABLE(VALUES(Dim_Calendar[Date]))
+    VAR _StatesFilter = CALCULATETABLE(VALUES(DIM_STATE[STATEABBR]))
+
+    VAR SummaryCategory =
+        ADDCOLUMNS(
+            SUMMARIZE(DIM_CATEGORY, DIM_CATEGORY[CATEGORY]),
+            "TotalReviews", CALCULATE(
+                COUNTROWS(vw_Unpivoted_Reviews),
+                KEEPFILTERS(TREATAS(_Dates, vw_Unpivoted_Reviews[REVIEW_DATE])),
+                KEEPFILTERS(TREATAS(_StatesFilter, vw_Unpivoted_Reviews[STATE]))
+            ),
+            "AvgRating", CALCULATE(
+                AVERAGE(vw_Unpivoted_Reviews[REVIEW_STARS]),
+                KEEPFILTERS(TREATAS(_Dates, vw_Unpivoted_Reviews[REVIEW_DATE])),
+                KEEPFILTERS(TREATAS(_StatesFilter, vw_Unpivoted_Reviews[STATE]))
+            )
+        )
+
+    VAR MaxReviewsCat = MAXX(SummaryCategory, [TotalReviews])
+    VAR MinReviewsCat = MINX(SummaryCategory, [TotalReviews])
+    VAR TopReviewedCategories = FILTER(SummaryCategory, [TotalReviews] = MaxReviewsCat)
+    VAR LowReviewedCategories = FILTER(SummaryCategory, [TotalReviews] = MinReviewsCat)
+
+    VAR TopReviewedCatNames =
+        CONCATENATEX(SELECTCOLUMNS(TopReviewedCategories, "Cat", DIM_CATEGORY[CATEGORY]), [Cat], ", ")
+
+    VAR LowReviewedCatNames =
+        CONCATENATEX(SELECTCOLUMNS(LowReviewedCategories, "Cat", DIM_CATEGORY[CATEGORY]), [Cat], ", ")
+
+    VAR FormattedTopReviewsCat = 
+        IF(MaxReviewsCat >= 1000000, FORMAT(MaxReviewsCat/1000000,"0.0") & "M",
+        IF(MaxReviewsCat >=1000, FORMAT(MaxReviewsCat/1000,"0.0") & "K", FORMAT(MaxReviewsCat,"0")))
+
+    VAR FormattedLowReviewsCat = 
+        IF(MinReviewsCat >= 1000000, FORMAT(MinReviewsCat/1000000,"0.0") & "M",
+        IF(MinReviewsCat >=1000, FORMAT(MinReviewsCat/1000,"0.0") & "K", FORMAT(MinReviewsCat,"0")))
+
+    VAR MaxRatingCat = MAXX(SummaryCategory, [AvgRating])
+    VAR MinRatingCat = MINX(SummaryCategory, [AvgRating])
+    VAR TopRatedCategories = FILTER(SummaryCategory, [AvgRating] = MaxRatingCat)
+    VAR LowRatedCategories = FILTER(SummaryCategory, [AvgRating] = MinRatingCat)
+
+    VAR TopRatedCatNames =
+        CONCATENATEX(SELECTCOLUMNS(TopRatedCategories, "Cat", DIM_CATEGORY[CATEGORY]), [Cat], ", ")
+
+    VAR LowRatedCatNames =
+        CONCATENATEX(SELECTCOLUMNS(LowRatedCategories, "Cat", DIM_CATEGORY[CATEGORY]), [Cat], ", ")
+
+    -- ------------------------------
+    -- FINAL HTML RETURN
+    -- ------------------------------
+    RETURN
+    "<b>STATE INSIGHTS</b><br>" &
+    "<span style='color:#666666;'> 📌 Highest reviewed state: </span><b style='color:#00BF00;'>" & TopReviewedStateNames & "</b> - <b>" & FormattedTopReviewsState & "</b> reviews<br>" &
+    "<span style='color:#666666;'> 📌 Lowest reviewed state: </span><b style='color:#D32323;'>" & LowReviewedStateNames & "</b> - <b>" & FormattedLowReviewsState & "</b> reviews<br>" &
+    "<span style='color:#666666;'> 📌 Highest rated state: </span><b style='color:#00BF00;'>" & TopRatedStateNames & "</b> - <b>" & FORMAT(MaxRatingState,"0.00") & "</b> average rating<br>" &
+    "<span style='color:#666666;'> 📌 Lowest rated state: </span><b style='color:#D32323;'>" & LowRatedStateNames & "</b> - <b>" & FORMAT(MinRatingState,"0.00") & "</b> average rating<br><br>" &
+    "<b>CATEGORY INSIGHTS</b><br>" &
+    "<span style='color:#666666;'> 📌 Highest reviewed category: </span><b style='color:#00BF00;'>" & TopReviewedCatNames & "</b> - <b>" & FormattedTopReviewsCat & "</b> reviews<br>" &
+    "<span style='color:#666666;'> 📌 Lowest reviewed category: </span><b style='color:#D32323;'>" & LowReviewedCatNames & "</b> - <b>" & FormattedLowReviewsCat & "</b> reviews<br>" &
+    "<span style='color:#666666;'> 📌 Highest rated category: </span><b style='color:#00BF00;'>" & TopRatedCatNames & "</b> - <b>" & FORMAT(MaxRatingCat,"0.00") & "</b> avg rating<br>" &
+    "<span style='color:#666666;'> 📌 Lowest rated category: </span><b style='color:#D32323;'>" & LowRatedCatNames & "</b> - <b>" & FORMAT(MinRatingCat,"0.00") & "</b> avg rating"
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

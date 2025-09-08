@@ -1,0 +1,94 @@
+-- TOOLTIP MAP DAX:
+
+1) State Selected = SELECTEDVALUE('Dim_State'[StateName])
+
+2) TopCategory_Tooltip_P3 = 
+    VAR T0 =
+        SUMMARIZE (
+            STATE_YEAR_CATEGORY_STATS,
+            STATE_YEAR_CATEGORY_STATS[STATE],
+            STATE_YEAR_CATEGORY_STATS[CATEGORY],
+            "TotalReviews", SUM ( STATE_YEAR_CATEGORY_STATS[TOTAL_REVIEWS] ),
+            "WeightedNum",
+                SUMX (
+                    STATE_YEAR_CATEGORY_STATS,
+                    STATE_YEAR_CATEGORY_STATS[AVG_RATING] * STATE_YEAR_CATEGORY_STATS[TOTAL_REVIEWS]
+                )
+        )
+    VAR T1 =
+        ADDCOLUMNS (
+            T0,
+            "WeightedAvg", DIVIDE ( [WeightedNum], [TotalReviews] )
+        )
+    VAR Top1 =
+        TOPN ( 1, T1, [WeightedAvg], DESC, [TotalReviews], DESC, [CATEGORY], ASC )
+    VAR Cat =
+        MAXX ( Top1, [CATEGORY] )
+    RETURN
+        IF ( ISBLANK ( Cat ), "No Data", Cat )
+
+3) BottomCategory_Tooltip_P3 = 
+    VAR T0 =
+        SUMMARIZE (
+            STATE_YEAR_CATEGORY_STATS,
+            STATE_YEAR_CATEGORY_STATS[STATE],
+            STATE_YEAR_CATEGORY_STATS[CATEGORY],
+            "TotalReviews", SUM ( STATE_YEAR_CATEGORY_STATS[TOTAL_REVIEWS] ),
+            "WeightedNum",
+                SUMX (
+                    STATE_YEAR_CATEGORY_STATS,
+                    STATE_YEAR_CATEGORY_STATS[AVG_RATING] * STATE_YEAR_CATEGORY_STATS[TOTAL_REVIEWS]
+                )
+        )
+    VAR T1 =
+        ADDCOLUMNS (
+            T0,
+            "WeightedAvg", DIVIDE ( [WeightedNum], [TotalReviews] )
+        )
+    VAR Bottom1 =
+        TOPN ( 1, T1, [WeightedAvg], ASC, [TotalReviews], ASC, [CATEGORY], ASC )
+    VAR Cat =
+        MAXX ( Bottom1, [CATEGORY] )
+    RETURN
+        IF ( ISBLANK ( Cat ), "No Data", Cat )
+
+4) MinReviewsForRanking_P3 = 100
+
+5) SparklineTitle = 
+    VAR YearsTable =
+        VALUES ( Dim_Calendar[Year] )
+
+    VAR YearCount =
+        COUNTROWS ( YearsTable )
+
+    VAR MinYear =
+        MINX ( YearsTable, Dim_Calendar[Year] )
+
+    VAR MaxYear =
+        MAXX ( YearsTable, Dim_Calendar[Year] )
+
+    VAR YearList =
+        CONCATENATEX (
+            YearsTable,
+            Dim_Calendar[Year],
+            ", ",
+            Dim_Calendar[Year],
+            ASC
+        )
+
+    VAR IsConsecutive =
+        YearCount = ( MaxYear - MinYear + 1 )
+
+    RETURN
+    SWITCH (
+        TRUE(),
+        YearCount = 1,
+            "Total Reviews by Month – " & YearList,
+        YearCount = 2,
+            "Monthly Total Reviews – " & YearList,
+        IsConsecutive,
+            "Monthly Total Reviews – " & FORMAT( MinYear, "0" ) & " to " & FORMAT( MaxYear, "0" ),
+        "Monthly Total Reviews – Selected Years"
+    )
+
+-----------------------------------------------------------------------------------------------------------------------------

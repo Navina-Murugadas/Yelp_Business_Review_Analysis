@@ -1,0 +1,95 @@
+-- CATEGORY BAR DAX:
+
+1) Total Reviews (CityCategory) = 
+    CALCULATE(
+        SUM(Fact_CityCategoryReviews[review_count]),
+        FILTER(
+            Fact_CityCategoryReviews,
+            Fact_CityCategoryReviews[review_stars] >= [MinSelectedRating] &&
+            Fact_CityCategoryReviews[review_stars] <= [MaxSelectedRating]
+        )
+    )
+
+2) Average Rating (Tooltip) = 
+    DIVIDE(
+        SUMX(
+            FILTER(
+                Fact_CityCategoryReviews,
+                Fact_CityCategoryReviews[review_stars] >= [MinSelectedRating] &&
+                Fact_CityCategoryReviews[review_stars] <= [MaxSelectedRating]
+            ),
+            Fact_CityCategoryReviews[review_stars] * Fact_CityCategoryReviews[review_count]
+        ),
+        SUMX(
+            FILTER(
+                Fact_CityCategoryReviews,
+                Fact_CityCategoryReviews[review_stars] >= [MinSelectedRating] &&
+                Fact_CityCategoryReviews[review_stars] <= [MaxSelectedRating]
+            ),
+            Fact_CityCategoryReviews[review_count]
+        )
+    )
+
+3) Positive Reviews (Tooltip) = 
+    CALCULATE(
+        SUM(Fact_CityCategoryReviews[review_count]),
+        FACT_CITYCATEGORYREVIEWS[SENTIMENTS] = "Positive",
+        FILTER(
+            Fact_CityCategoryReviews,
+            Fact_CityCategoryReviews[review_stars] >= [MinSelectedRating] &&
+            Fact_CityCategoryReviews[review_stars] <= [MaxSelectedRating]
+        )
+    )
+
+4) Neutral Reviews (Tooltip) = 
+    CALCULATE(
+        SUM(Fact_CityCategoryReviews[review_count]),
+        FACT_CITYCATEGORYREVIEWS[SENTIMENTS] = "Neutral",
+        FILTER(
+            Fact_CityCategoryReviews,
+            Fact_CityCategoryReviews[review_stars] >= [MinSelectedRating] &&
+            Fact_CityCategoryReviews[review_stars] <= [MaxSelectedRating]
+        )
+    )
+
+5) Negative Reviews (Tooltip) = 
+    CALCULATE(
+        SUM(Fact_CityCategoryReviews[review_count]),
+        FACT_CITYCATEGORYREVIEWS[SENTIMENTS] = "Negative",
+        FILTER(
+            Fact_CityCategoryReviews,
+            Fact_CityCategoryReviews[review_stars] >= [MinSelectedRating] &&
+            Fact_CityCategoryReviews[review_stars] <= [MaxSelectedRating]
+        )
+    )
+
+6) CityCategory_HasData = 
+    VAR ReviewCount =
+        CALCULATE (
+            SUM ( Fact_CityCategoryReviews[review_count] ),
+            FILTER (
+                Fact_CityCategoryReviews,
+                Fact_CityCategoryReviews[review_stars] >= [MinSelectedRating] &&
+                Fact_CityCategoryReviews[review_stars] <= [MaxSelectedRating]
+            )
+        )
+    RETURN
+        IF ( ISBLANK(ReviewCount) || ReviewCount = 0, 0, 1 )
+
+7) Rank_CategoryByCity = 
+    RANKX(
+        ALLSELECTED(Dim_Category[CATEGORY]),
+        [Total Reviews (CityCategory)]
+    )
+
+8) IsInTopN = 
+    IF([Rank_CategoryByCity] <= [SelectedTopN], 1, 0)
+
+9) CityCategory_Title = 
+    IF (
+        [CityCategory_HasData] = 0,
+        "⚠ No reviews found for the selected City and Rating range.",
+        BLANK()
+    )
+    
+-----------------------------------------------------------------------------------------------------------------------------

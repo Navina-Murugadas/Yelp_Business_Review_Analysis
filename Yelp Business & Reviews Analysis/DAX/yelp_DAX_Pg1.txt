@@ -1,0 +1,58 @@
+-- PAGE 1 DAX:
+
+1) Average Rating = AVERAGE('Fact_YelpDedupedReviews'[review_stars])
+
+2) Average Rating Table = AVERAGE ( vw_Unpivoted_Reviews[REVIEW_STARS] )
+
+3) Formatted DateTime = FORMAT(NOW(), "dd mmm yyyy, hh:mm AM/PM")
+
+4) Total Reviews = COUNTROWS('Fact_YelpDedupedReviews')
+
+5) Formatted Total Reviews = 
+    VAR reviews = [Total Reviews]
+    RETURN 
+        IF(reviews >= 1000000,
+            FORMAT(reviews / 1000000, "0.00") & "M",
+            IF(reviews >= 1000,
+                FORMAT(reviews / 1000, "0.00") & "K",
+                FORMAT(reviews, "0")
+            )
+        )
+
+6) Total Reviews Table = COUNTROWS ( vw_Unpivoted_Reviews )
+
+7) Formatted Total Reviews Table = 
+    VAR reviews = [Total Reviews Table]
+    RETURN 
+        IF(reviews >= 1000000,
+            FORMAT(reviews / 1000000, "0.00") & "M",
+            IF(reviews >= 1000,
+                FORMAT(reviews / 1000, "0.00") & "K",
+                FORMAT(reviews, "0")
+            )
+        )
+
+8) Positive Reviews = CALCULATE([Total Reviews], 'Fact_YelpDedupedReviews'[sentiments] = "Positive")
+
+9) Positive % = DIVIDE([Positive Reviews], [Total Reviews])
+
+10) Neutral Reviews = CALCULATE([Total Reviews], 'Fact_YelpDedupedReviews'[sentiments] = "Neutral")
+
+11) Neutral % = DIVIDE([Neutral Reviews], [Total Reviews])
+
+12) Negative Reviews = CALCULATE([Total Reviews], 'Fact_YelpDedupedReviews'[sentiments] = "Negative")
+
+13) Negative % = DIVIDE([Negative Reviews], [Total Reviews])
+
+14) Review Count = COUNTROWS(vw_Unpivoted_Reviews)
+
+15) Valid Category = 
+    IF (
+        [Total Reviews Table] >= 10000 &&
+        [Average Rating Table] > 4.0,
+        1,
+        0
+    )
+
+-----------------------------------------------------------------------------------------------------------------------------
+

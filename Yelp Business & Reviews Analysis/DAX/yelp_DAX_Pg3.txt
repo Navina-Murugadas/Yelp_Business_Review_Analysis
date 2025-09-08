@@ -1,0 +1,144 @@
+-- PAGE 3 DAX:
+
+1) Total Reviews City = 
+    VAR _Min = [MinSelectedRating]
+    VAR _Max = [MaxSelectedRating]
+    VAR _AllMin = MINX( ALL( AvgRating_Values ), AvgRating_Values[Value] )
+    VAR _AllMax = MAXX( ALL( AvgRating_Values ), AvgRating_Values[Value] )
+    VAR _Bypass = ( _Min <= _AllMin && _Max >= _AllMax )
+    RETURN
+    IF (
+        _Bypass,
+        DISTINCTCOUNT ( vw_Unpivoted_Reviews[REVIEW_ID] ),
+        CALCULATE (
+            DISTINCTCOUNT ( vw_Unpivoted_Reviews[REVIEW_ID] ),
+            FILTER (
+                ALLSELECTED ( vw_Unpivoted_Reviews ),
+                vw_Unpivoted_Reviews[REVIEW_STARS] >= _Min &&
+                vw_Unpivoted_Reviews[REVIEW_STARS] <= _Max
+            )
+        )
+    )
+
+2) Formatted Total Reviews City = 
+    VAR reviews = [Total Reviews City]
+    RETURN 
+        IF (
+            ISBLANK ( reviews ) || reviews = 0,
+            "--",
+            IF(
+                reviews >= 1000000,
+                FORMAT(reviews / 1000000, "0.00") & "M",
+                IF(
+                    reviews >= 1000,
+                    FORMAT(reviews / 1000, "0.00") & "K",
+                    FORMAT(reviews, "0")
+                )
+            )
+        )
+
+3) Average Rating City = 
+    IF (
+        [Total Reviews City] = 0,
+        BLANK(),
+        AVERAGEX (
+            DISTINCT ( vw_Unpivoted_Reviews[REVIEW_ID] ),
+            CALCULATE ( MAX ( vw_Unpivoted_Reviews[REVIEW_STARS] ) )
+        )
+    )
+
+4) Positive Reviews City = 
+    VAR _Min = [MinSelectedRating]
+    VAR _Max = [MaxSelectedRating]
+    VAR _AllMin = MINX( ALL( AvgRating_Values ), AvgRating_Values[Value] )
+    VAR _AllMax = MAXX( ALL( AvgRating_Values ), AvgRating_Values[Value] )
+    VAR _Bypass = ( _Min <= _AllMin && _Max >= _AllMax )
+    RETURN
+    IF (
+        _Bypass,
+        CALCULATE (
+            DISTINCTCOUNT ( vw_Unpivoted_Reviews[REVIEW_ID] ),
+            vw_Unpivoted_Reviews[SENTIMENTS] = "Positive"
+        ),
+        CALCULATE (
+            DISTINCTCOUNT ( vw_Unpivoted_Reviews[REVIEW_ID] ),
+            vw_Unpivoted_Reviews[SENTIMENTS] = "Positive",
+            FILTER (
+                ALLSELECTED ( vw_Unpivoted_Reviews ),
+                vw_Unpivoted_Reviews[REVIEW_STARS] >= _Min &&
+                vw_Unpivoted_Reviews[REVIEW_STARS] <= _Max
+            )
+        )
+    )
+
+5) Positive % City = DIVIDE([Positive Reviews City], [Total Reviews City])
+
+6) Neutral Reviews City = 
+    VAR _Min = [MinSelectedRating]
+    VAR _Max = [MaxSelectedRating]
+    VAR _AllMin = MINX( ALL( AvgRating_Values ), AvgRating_Values[Value] )
+    VAR _AllMax = MAXX( ALL( AvgRating_Values ), AvgRating_Values[Value] )
+    VAR _Bypass = ( _Min <= _AllMin && _Max >= _AllMax )
+    RETURN
+    IF (
+        _Bypass,
+        CALCULATE (
+            DISTINCTCOUNT ( vw_Unpivoted_Reviews[REVIEW_ID] ),
+            vw_Unpivoted_Reviews[SENTIMENTS] = "Neutral"
+        ),
+        CALCULATE (
+            DISTINCTCOUNT ( vw_Unpivoted_Reviews[REVIEW_ID] ),
+            vw_Unpivoted_Reviews[SENTIMENTS] = "Neutral",
+            FILTER (
+                ALLSELECTED ( vw_Unpivoted_Reviews ),
+                vw_Unpivoted_Reviews[REVIEW_STARS] >= _Min &&
+                vw_Unpivoted_Reviews[REVIEW_STARS] <= _Max
+            )
+        )
+    )
+
+7) Neutral % City = DIVIDE([Neutral Reviews City], [Total Reviews City])
+
+8) Negative Reviews City = 
+    VAR _Min = [MinSelectedRating]
+    VAR _Max = [MaxSelectedRating]
+    VAR _AllMin = MINX( ALL( AvgRating_Values ), AvgRating_Values[Value] )
+    VAR _AllMax = MAXX( ALL( AvgRating_Values ), AvgRating_Values[Value] )
+    VAR _Bypass = ( _Min <= _AllMin && _Max >= _AllMax )
+    RETURN
+    IF (
+        _Bypass,
+        CALCULATE (
+            DISTINCTCOUNT ( vw_Unpivoted_Reviews[REVIEW_ID] ),
+            vw_Unpivoted_Reviews[SENTIMENTS] = "Negative"
+        ),
+        CALCULATE (
+            DISTINCTCOUNT ( vw_Unpivoted_Reviews[REVIEW_ID] ),
+            vw_Unpivoted_Reviews[SENTIMENTS] = "Negative",
+            FILTER (
+                ALLSELECTED ( vw_Unpivoted_Reviews ),
+                vw_Unpivoted_Reviews[REVIEW_STARS] >= _Min &&
+                vw_Unpivoted_Reviews[REVIEW_STARS] <= _Max
+            )
+        )
+    )
+
+9) Negative % City = DIVIDE([Negative Reviews City], [Total Reviews City])
+
+10) MinSelectedRating = MIN(AvgRating_Values[Value])
+
+11) MaxSelectedRating = MAX(AvgRating_Values[Value])
+
+12) WordCloudEmptyMsg = 
+    VAR WordCount =
+        CALCULATE (
+            COUNTROWS ( Fact_Words_By_City_Category )
+        )
+    RETURN
+        IF (
+            WordCount = 0,
+            "⚠ No top words (100+ mentions) found for the selected Category",
+            ""  -- Return empty string instead of BLANK()
+        )
+
+-----------------------------------------------------------------------------------------------------------------------------

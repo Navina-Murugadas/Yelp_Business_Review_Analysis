@@ -1,0 +1,83 @@
+-- CITY TABLE DAX:
+
+1) Total Reviews (Filtered) = 
+    CALCULATE (
+        DISTINCTCOUNT ( vw_Unpivoted_Reviews[REVIEW_ID] ),
+        KEEPFILTERS (
+            FILTER (
+                vw_Unpivoted_Reviews,
+                vw_Unpivoted_Reviews[REVIEW_STARS] >= [MinSelectedRating]
+                && vw_Unpivoted_Reviews[REVIEW_STARS] <= [MaxSelectedRating]
+            )
+        )
+    )
+
+2) Formatted ToR Table = 
+    VAR reviews = [Total Reviews (Filtered)]
+    RETURN 
+        SWITCH (
+            TRUE(),
+            reviews >= 1000000, FORMAT ( reviews / 1000000, "0.#" ) & "M",
+            reviews >= 1000, FORMAT ( reviews / 1000, "0.#" ) & "K",
+            FORMAT ( reviews, "0" )
+        )
+
+3) For Total Reviews Table = 
+    VAR reviews = [Total Reviews (Filtered)]
+    RETURN 
+        IF(reviews >= 1000000,
+            FORMAT(reviews / 1000000, "0.00") & "M",
+            IF(reviews >= 1000,
+                FORMAT(reviews / 1000, "0.00") & "K",
+                FORMAT(reviews, "0")
+            )
+        )
+
+4) Positive Reviews Table = 
+    CALCULATE(
+        [Total Reviews (Filtered)],
+        vw_Unpivoted_Reviews[SENTIMENTS] = "Positive"
+    )
+
+5) Pos % = 
+    VAR Result =
+        DIVIDE ( [Positive Reviews Table], [Total Reviews (Filtered)] )
+    RETURN
+        IF ( ISBLANK ( Result ), "--", FORMAT ( Result, "0.00%" ) )
+
+6) Neutral Reviews Table = 
+    CALCULATE(
+        [Total Reviews (Filtered)],
+        vw_Unpivoted_Reviews[SENTIMENTS] = "Neutral"
+    )
+
+7) Neu % = 
+    VAR Result =
+        DIVIDE ( [Neutral Reviews Table], [Total Reviews (Filtered)] )
+    RETURN
+        IF ( ISBLANK ( Result ), "--", FORMAT ( Result, "0.00%" ) )
+
+8) Negative Reviews Table = 
+    CALCULATE(
+        [Total Reviews (Filtered)],
+        vw_Unpivoted_Reviews[SENTIMENTS] = "Negative"
+    )
+
+9) Neg % = 
+    VAR Result =
+        DIVIDE ( [Negative Reviews Table], [Total Reviews (Filtered)] )
+    RETURN
+        IF ( ISBLANK ( Result ), "--", FORMAT ( Result, "0.00%" ) )
+
+10) City Rank = 
+    RANKX(
+        ALLSELECTED(vw_Unpivoted_Reviews[CITY]),
+        [Total Reviews (Filtered)],
+        ,
+        DESC
+    )
+
+11) Show City = 
+    IF([City Rank] <= [SelectedTopN], 1, 0)
+    
+-----------------------------------------------------------------------------------------------------------------------------
