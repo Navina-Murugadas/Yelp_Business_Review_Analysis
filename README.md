@@ -148,25 +148,30 @@ $$;
 
 ## 📸 Dashboard Preview 
 ### 🖼️ Cover Page
-![Yelp Business Reviews Analysis_page-0001](https://github.com/user-attachments/assets/35d2995f-45e3-43a2-bfe8-90d81f687f06)
+![Yelp Business Reviews Analysis_page-0001](https://github.com/user-attachments/assets/3bd522c6-faeb-43af-805d-8b5442b03dbd)
 ### 📊 Summary Dashboard
-![Yelp Business Reviews Analysis_page-0002](https://github.com/user-attachments/assets/776f2283-2287-4ea8-8690-819c904bf0b6)
+![Yelp Business Reviews Analysis_page-0002](https://github.com/user-attachments/assets/2a5ecd33-7ac5-4334-8b33-c44b3a1d931b)
 ### 📌 Overview Dashboard
-![Yelp Business Reviews Analysis_page-0003](https://github.com/user-attachments/assets/3207c71d-5a70-4bef-b1a0-686544b00019)
+![Yelp Business Reviews Analysis_page-0003](https://github.com/user-attachments/assets/2c9d9f82-2bfc-4278-92a1-59fa4d800554)
 ### 🗺️ State Insights
-![Yelp Business Reviews Analysis_page-0004](https://github.com/user-attachments/assets/848c7032-6858-4ad5-8c11-227c45dae9c5)
+![Yelp Business Reviews Analysis_page-0004](https://github.com/user-attachments/assets/3a1a4bcc-3d6d-451c-8cea-6516f0d8e819)
 ### 🏙️ City & Category Insights
-![Yelp Business Reviews Analysis_page-0005](https://github.com/user-attachments/assets/6ab19089-8396-4e3e-a4d2-6b0be6eaac8d)
+![Yelp Business Reviews Analysis_page-0005](https://github.com/user-attachments/assets/55cd6933-1164-48f1-ac20-26b88d18cde3)
 ### 🌍 Time & Location Insights
-![Yelp Business Reviews Analysis_page-0006](https://github.com/user-attachments/assets/2eeca497-fa53-481c-976a-0457386709aa)
+![Yelp Business Reviews Analysis_page-0006](https://github.com/user-attachments/assets/2d3cc9b7-33bb-41d2-bfde-260b3da0c28f)
+
 
 ---
 
 ### 🔍 Tooltips
-![Yelp Business Reviews Analysis_page-0007](https://github.com/user-attachments/assets/cdf14948-0068-442f-9e2b-e9dd63936aba)
-![Yelp Business Reviews Analysis_page-0008](https://github.com/user-attachments/assets/5b018dde-3c54-4086-b692-597dd677aea8)
-![Yelp Business Reviews Analysis_page-0009](https://github.com/user-attachments/assets/6a8b1fe4-20a6-41c1-88ec-c403c090af7c)
-![Yelp Business Reviews Analysis_page-0010](https://github.com/user-attachments/assets/db17e6dd-2901-4367-84ec-fa59a11e4abd)
+<img width="428" height="610" alt="Screenshot 2026-03-02 023121" src="https://github.com/user-attachments/assets/a8f20cb1-d7d0-47c5-8df3-8cf0ee58d75c" />
+<br><br>
+<img width="402" height="402" alt="Screenshot 2026-03-02 023145" src="https://github.com/user-attachments/assets/ec470f0c-931b-4473-ba21-175aad27b51f" />
+<br><br>
+<img width="402" height="403" alt="Screenshot 2026-03-02 023224" src="https://github.com/user-attachments/assets/5f157cb3-050c-467d-9646-92b4b305d138" />
+<br><br>
+<img width="769" height="494" alt="Screenshot 2026-03-02 023253" src="https://github.com/user-attachments/assets/29a0e96e-4c1d-4bf6-b458-b0c254401cec" />
+
 
 ---
 
