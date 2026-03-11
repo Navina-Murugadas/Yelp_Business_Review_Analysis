@@ -123,7 +123,7 @@ $$;
 
 ## 🚀 Live Dashboard  
 
-🔗 [**Click here to explore the interactive Power BI Dashboard**](https://app.powerbi.com/view?r=eyJrIjoiNGQwYzE5MDgtYWMwNC00ODhiLTg5OGYtOWQ2N2I2ZDU0ZTVlIiwidCI6IjQ5MWIwYjZiLTA1NDAtNDJjZi1iZTJmLWE2NjZlNWFiMjIxOCJ9)
+🔗 [**Click here to explore the interactive Power BI Dashboard**](https://app.powerbi.com/view?r=eyJrIjoiMGM3YTg3MjEtODE3Mi00ODBlLTkxY2ItOTI1ZDA3ZjAzOGY5IiwidCI6IjQ5MWIwYjZiLTA1NDAtNDJjZi1iZTJmLWE2NjZlNWFiMjIxOCJ9&pageName=dca2e2cb0157702568d7)
 
 *(Best viewed on desktop for full interactivity)*  
 
